@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Fruit Ripeness Detector</title>
+</head>
+<body style="text-align:center; font-family:sans-serif; padding-top:30px;">
+    <h1>🍎 Fruit Ripeness & Quality Detector</h1>
+
+    <input type="file" id="imageInput" accept="image/*" onchange="showImagePreview()">
+    <br><br>
+
+    <img id="preview" src="" alt="Image Preview" style="max-width:300px; display:none; border:1px solid #ccc; padding:5px; margin-bottom:10px;">
+    <br>
+
+    <button onclick="predictImage()">Predict</button>
+    <h3 id="result"></h3>
+
+    <hr style="margin:40px 0;">
+
+    <h2>📷 Live Camera Detection (Beta)</h2>
+    <video id="webcam" autoplay playsinline width="320" height="240" style="border:1px solid #ccc;"></video>
+    <br>
+    <button onclick="startCamera()">Start Camera</button>
+    <button onclick="stopCamera()">Stop Camera</button>
+
+    <script>
+        let stream = null;
+
+        function showImagePreview() {
+            var input = document.getElementById("imageInput");
+            var file = input.files[0];
+            var reader = new FileReader();
+
+            reader.onload = function(e) {
+                var preview = document.getElementById("preview");
+                preview.src = e.target.result;
+                preview.style.display = "block";
+            };
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function predictImage() {
+            var input = document.getElementById("imageInput");
+            var file = input.files[0];
+            var formData = new FormData();
+            formData.append("file", file);
+
+            fetch("/predict-image/", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerText =
+                    `Prediction: ${data.prediction}, Confidence: ${data.confidence}`;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        }
+
+        function startCamera() {
+            const video = document.getElementById("webcam");
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = stream;
+                })
+                .catch(err => {
+                    alert("Failed to access webcam: " + err);
+                });
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        }
+    </script>
+</body>
+</html>
