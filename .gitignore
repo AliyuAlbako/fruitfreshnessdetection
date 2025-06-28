@@ -217,7 +217,6 @@ __pycache__/
 .venv/
 .idea/
 .vscode/
-*.h5
 *.keras
 .DS_Store
 *.bak
